@@ -28,7 +28,7 @@
             <nav class="nav-links">
                 <a href="#services">Perkhidmatan</a>
                 <a href="#barbers">Barber</a>
-                <a href="#about">Tentang</a>
+                <a href="#join-barber" class="highlight">Sertai sebagai Barber</a>
                 <button class="btn btn-primary" id="loginBtn">Log Masuk</button>
             </nav>
             <button class="mobile-menu-btn">
@@ -123,6 +123,20 @@
                 </div>
             </div>
         </section>
+
+        <section id="join-barber" class="join-barber container">
+            <div class="join-card">
+                <div class="join-content">
+                    <h2>Mahu Jadi Sebahagian Daripada <span class="highlight">Kami?</span></h2>
+                    <p>Daftar sebagai barber hari ini dan mula terima tempahan daripada pelanggan di kawasan anda.</p>
+                    <button class="btn btn-primary btn-lg" id="barberSignupLandingBtn">Daftar sebagai Barber</button>
+                </div>
+                <div class="join-image">
+                    <i data-lucide="scissors"
+                        style="width: 120px; height: 120px; color: var(--primary); opacity: 0.2;"></i>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- Dashboard Section (Hidden by default) -->
@@ -198,28 +212,37 @@
                 <p>Selamat kembali ke Tukang Gunting</p>
             </div>
             <form id="authForm" class="auth-form">
-                <div class="form-group">
-                    <label for="email">E-mel</label>
-                    <input type="email" id="email" placeholder="nama@emel.com" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Kata Laluan</label>
-                    <input type="password" id="password" placeholder="••••••••" required>
-                </div>
-                <div class="form-group" id="roleGroup" style="display: none;">
-                    <label>Saya ingin mendaftar sebagai:</label>
-                    <div class="role-selection">
-                        <label class="radio-label">
-                            <input type="radio" name="role" value="customer" checked> Pelanggan
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="role" value="barber"> Barber
-                        </label>
+                <!-- Role Selection Stage -->
+                <div id="roleSelectionStage" style="display: none;">
+                    <p style="margin-bottom: 1.5rem; text-align: center;">Sila pilih jenis akaun anda:</p>
+                    <div class="role-grid">
+                        <div class="role-card" data-role="customer">
+                            <i data-lucide="user"></i>
+                            <span>Pelanggan</span>
+                        </div>
+                        <div class="role-card" data-role="barber">
+                            <i data-lucide="scissors"></i>
+                            <span>Barber</span>
+                        </div>
                     </div>
+                    <p class="auth-switch" style="margin-top: 1.5rem; text-align: center;">Sudah ada akaun? <a href="#"
+                            id="backToLogin">Log Masuk</a></p>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block" id="authSubmitBtn">Log Masuk</button>
+
+                <!-- Account Info Stage -->
+                <div id="accountInfoStage">
+                    <div class="form-group">
+                        <label for="email">E-mel</label>
+                        <input type="email" id="email" placeholder="nama@emel.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Kata Laluan</label>
+                        <input type="password" id="password" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block" id="authSubmitBtn">Log Masuk</button>
+                </div>
             </form>
-            <div class="auth-switch">
+            <div class="auth-switch" id="signupSwitch">
                 <p id="authSwitchText">Belum ada akaun? <a href="#" id="toggleAuth">Daftar Sekarang</a></p>
             </div>
         </div>

@@ -90,33 +90,71 @@ document.addEventListener('DOMContentLoaded', () => {
     const authSwitchText = document.getElementById('authSwitchText');
 
     let isLogin = true;
+    let selectedRole = 'customer';
 
-    const toggleAuthMode = () => {
-        isLogin = !isLogin;
+    const roleSelectionStage = document.getElementById('roleSelectionStage');
+    const accountInfoStage = document.getElementById('accountInfoStage');
+    const signupSwitch = document.getElementById('signupSwitch');
+
+    const toggleAuthMode = (forceSignup = false, forceRole = null) => {
+        if (forceSignup) {
+            isLogin = false;
+        } else if (forceRole === null) {
+            isLogin = !isLogin;
+        }
+
         authTitle.innerText = isLogin ? 'Log Masuk' : 'Daftar Akaun';
         authSubtitle.innerText = isLogin ? 'Selamat kembali ke Tukang Gunting' : 'Sertai komuniti Tukang Gunting hari ini';
         authSubmitBtn.innerText = isLogin ? 'Log Masuk' : 'Daftar';
-        authSwitchText.innerHTML = isLogin ?
-            'Belum ada akaun? <a href="#" id="toggleAuth">Daftar Sekarang</a>' :
-            'Sudah ada akaun? <a href="#" id="toggleAuth">Log Masuk</a>';
 
-        const roleGroup = document.getElementById('roleGroup');
-        if (roleGroup) {
-            roleGroup.style.display = isLogin ? 'none' : 'block';
+        if (isLogin) {
+            roleSelectionStage.style.display = 'none';
+            accountInfoStage.style.display = 'block';
+            signupSwitch.style.display = 'block';
+        } else {
+            if (forceRole) {
+                selectedRole = forceRole;
+                roleSelectionStage.style.display = 'none';
+                accountInfoStage.style.display = 'block';
+                signupSwitch.style.display = 'none'; // Hide switch if forced
+            } else {
+                roleSelectionStage.style.display = 'block';
+                accountInfoStage.style.display = 'none';
+                signupSwitch.style.display = 'none';
+            }
         }
-
-        // Re-attach listener because innerHTML wipes it
-        document.getElementById('toggleAuth').addEventListener('click', (e) => {
-            e.preventDefault();
-            toggleAuthMode();
-        });
     };
+
+    // Role Selection Logic
+    document.querySelectorAll('.role-card').forEach(card => {
+        card.addEventListener('click', () => {
+            selectedRole = card.dataset.role;
+            roleSelectionStage.style.display = 'none';
+            accountInfoStage.style.display = 'block';
+            authTitle.innerText = `Daftar sebagai ${selectedRole === 'barber' ? 'Barber' : 'Pelanggan'}`;
+        });
+    });
+
+    document.getElementById('backToLogin')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        isLogin = true;
+        toggleAuthMode();
+    });
 
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
+            isLogin = true;
+            toggleAuthMode();
             authModal.style.display = 'flex';
         });
     }
+
+    // Landing Page CTAs
+    document.getElementById('barberSignupLandingBtn')?.addEventListener('click', () => {
+        isLogin = false;
+        toggleAuthMode(true, 'barber');
+        authModal.style.display = 'flex';
+    });
 
     if (closeModal) {
         closeModal.addEventListener('click', () => {
@@ -130,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    if (toggleAuth) {
+    if (toggleAuth) { // This block is likely to be removed or modified in a future iteration
         toggleAuth.addEventListener('click', (e) => {
             e.preventDefault();
             toggleAuthMode();
@@ -180,7 +218,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const loginBtn = document.getElementById('loginBtn');
         if (loginBtn) {
             loginBtn.innerText = 'Log Masuk';
-            loginBtn.onclick = () => authModal.style.display = 'flex';
+            loginBtn.onclick = () => {
+                isLogin = true;
+                toggleAuthMode();
+                authModal.style.display = 'flex';
+            };
         }
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) logoutBtn.remove();
@@ -342,14 +384,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (error) throw error;
                     alert('Selamat datang!');
                 } else {
-                    const role = document.querySelector('input[name="role"]:checked')?.value || 'customer';
                     const { data, error } = await _supabase.auth.signUp({
                         email,
                         password,
                         options: {
                             data: {
                                 full_name: email.split('@')[0],
-                                role: role
+                                role: selectedRole
                             }
                         }
                     });
