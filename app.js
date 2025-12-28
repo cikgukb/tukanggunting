@@ -8,54 +8,59 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Tukang Gunting script loaded.');
 
-    // Mock Barber Data
-    const mockBarbers = [
-        {
-            name: "Ahmad Jamsari",
-            location: "Kuala Lumpur",
-            rating: 4.9,
-            image: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-        },
-        {
-            name: "Syed Al-Bakri",
-            location: "Shah Alam",
-            rating: 4.8,
-            image: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-        },
-        {
-            name: "Fadhil Razak",
-            location: "Petaling Jaya",
-            rating: 5.0,
-            image: "https://images.unsplash.com/photo-1621605815841-aa897822920c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
-        }
-    ];
-
-    const renderBarbers = () => {
+    // Real Barber Data Fetching from Supabase
+    const fetchBarbers = async () => {
         const barbersList = document.getElementById('barbersList');
         if (!barbersList) return;
 
-        barbersList.innerHTML = mockBarbers.map(barber => `
-            <div class="barber-card">
-                <img src="${barber.image}" alt="${barber.name}" class="barber-image">
-                <div class="barber-info">
-                    <h3 class="barber-name">${barber.name}</h3>
-                    <div class="barber-location">
-                        <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
-                        ${barber.location}
-                    </div>
-                    <div class="barber-rating">
-                        <i data-lucide="star" style="width: 16px; height: 16px; fill: var(--primary);"></i>
-                        ${barber.rating}
+        try {
+            // Join barbers with profiles to get information
+            const { data, error } = await _supabase
+                .from('barbers')
+                .select(`
+                    id,
+                    bio,
+                    location,
+                    rating,
+                    profiles (
+                        full_name,
+                        avatar_url
+                    )
+                `);
+
+            if (error) throw error;
+
+            if (data.length === 0) {
+                barbersList.innerHTML = '<p class="section-subtitle">Tiada barber ditemui. Sila tambah data di Supabase.</p>';
+                return;
+            }
+
+            barbersList.innerHTML = data.map(barber => `
+                <div class="barber-card">
+                    <img src="${barber.profiles.avatar_url || 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'}" alt="${barber.profiles.full_name}" class="barber-image">
+                    <div class="barber-info">
+                        <h3 class="barber-name">${barber.profiles.full_name}</h3>
+                        <div class="barber-location">
+                            <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
+                            ${barber.location}
+                        </div>
+                        <div class="barber-rating">
+                            <i data-lucide="star" style="width: 16px; height: 16px; fill: var(--primary);"></i>
+                            ${barber.rating || '0.0'}
+                        </div>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('');
 
-        lucide.createIcons();
+            lucide.createIcons();
+        } catch (error) {
+            console.error('Error fetching barbers:', error);
+            barbersList.innerHTML = '<p class="section-subtitle">Ralat memuatkan data. Sila pastikan Table sudah dicipta di Supabase.</p>';
+        }
     };
 
-    // Simulate loading
-    setTimeout(renderBarbers, 1500);
+    // Load actual data
+    fetchBarbers();
 
     // Smooth scroll for nav links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
