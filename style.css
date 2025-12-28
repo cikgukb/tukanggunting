@@ -642,3 +642,101 @@ body {
         flex-direction: column;
     }
 }
+
+/* Join Barber Section */
+.join-barber {
+    padding: 6rem 2rem;
+}
+
+.join-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, #111 100%);
+    border-radius: 30px;
+    padding: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    position: relative;
+}
+
+.join-content {
+    max-width: 600px;
+    z-index: 1;
+}
+
+.join-content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.join-content p {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+}
+
+.join-image {
+    position: absolute;
+    right: -20px;
+    bottom: -20px;
+    transform: rotate(-15deg);
+}
+
+/* Role Selection Grid */
+.role-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.role-card {
+    background: var(--bg-body);
+    border: 2px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.role-card i {
+    width: 48px;
+    height: 48px;
+    color: var(--primary);
+}
+
+.role-card span {
+    font-weight: 600;
+    color: var(--text-white);
+}
+
+.role-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-5px);
+    background: rgba(255, 215, 0, 0.05);
+}
+
+.role-card.active {
+    border-color: var(--primary);
+    background: rgba(255, 215, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .join-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 3rem 2rem;
+    }
+
+    .join-image {
+        position: relative;
+        right: 0;
+        bottom: 0;
+        margin-top: 2rem;
+    }
+}
