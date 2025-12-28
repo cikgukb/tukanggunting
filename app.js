@@ -100,6 +100,11 @@ document.addEventListener('DOMContentLoaded', () => {
             'Belum ada akaun? <a href="#" id="toggleAuth">Daftar Sekarang</a>' :
             'Sudah ada akaun? <a href="#" id="toggleAuth">Log Masuk</a>';
 
+        const roleGroup = document.getElementById('roleGroup');
+        if (roleGroup) {
+            roleGroup.style.display = isLogin ? 'none' : 'block';
+        }
+
         // Re-attach listener because innerHTML wipes it
         document.getElementById('toggleAuth').addEventListener('click', (e) => {
             e.preventDefault();
@@ -182,10 +187,35 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const showDashboard = async () => {
-        // Toggle dashboard view
-        document.querySelector('main').style.display = 'none';
-        document.getElementById('dashboardSection').style.display = 'block';
+        if (!currentUser) return;
 
+        // Fetch profile to check role
+        const { data: profile, error: profileErr } = await _supabase
+            .from('profiles')
+            .select('role, full_name')
+            .eq('id', currentUser.id)
+            .single();
+
+        if (profileErr) {
+            console.error('Error fetching profile:', profileErr);
+            return;
+        }
+
+        // Toggle visibility
+        document.querySelector('main').style.display = 'none';
+
+        if (profile.role === 'barber') {
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('barberDashboardSection').style.display = 'block';
+            renderBarberDashboard(profile);
+        } else {
+            document.getElementById('barberDashboardSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+            renderUserDashboard(profile);
+        }
+    };
+
+    const renderUserDashboard = async (profile) => {
         const bookingList = document.getElementById('userBookingsList');
         bookingList.innerHTML = '<p>Memuatkan tempahan anda...</p>';
 
@@ -224,11 +254,72 @@ document.addEventListener('DOMContentLoaded', () => {
         `).join('');
     };
 
+    const renderBarberDashboard = async (profile) => {
+        const bookingList = document.getElementById('barberBookingsList');
+        bookingList.innerHTML = '<p>Memuatkan tempahan pelanggan...</p>';
+
+        // First, check if this user is in the barbers table
+        const { data: barber, error: barberErr } = await _supabase
+            .from('barbers')
+            .select('id')
+            .eq('id', currentUser.id)
+            .single();
+
+        if (barberErr) {
+            // If not in barbers table yet, show profile completion form
+            bookingList.innerHTML = `
+                <div class="setup-notice">
+                    <p>Anda belum mendaftar maklumat profesional anda.</p>
+                    <button class="btn btn-primary" id="setupBarberProfileBtn">Lengkapkan Profil Barber</button>
+                </div>
+            `;
+            document.getElementById('setupBarberProfileBtn').onclick = () => {
+                alert('Fungsi ini sedang dibangunkan. Buat masa ini, sila hubungi Admin untuk pengesahan barber.');
+            };
+            return;
+        }
+
+        const { data, error } = await _supabase
+            .from('bookings')
+            .select(`
+                id,
+                scheduled_at,
+                status,
+                services (name),
+                profiles:customer_id (full_name)
+            `)
+            .eq('barber_id', currentUser.id);
+
+        if (error) {
+            bookingList.innerHTML = '<p>Ralat memuatkan tempahan: ' + error.message + '</p>';
+            return;
+        }
+
+        if (data.length === 0) {
+            bookingList.innerHTML = '<p>Tiada tempahan baharu untuk anda.</p>';
+            return;
+        }
+
+        bookingList.innerHTML = data.map(booking => `
+            <div class="booking-card">
+                <div class="booking-details">
+                    <h4>Pelanggan: ${booking.profiles.full_name}</h4>
+                    <p>Perkhidmatan: ${booking.services.name}</p>
+                    <p>Tarikh/Masa: ${new Date(booking.scheduled_at).toLocaleString()}</p>
+                </div>
+                <div class="booking-status ${booking.status}">
+                    ${booking.status.toUpperCase()}
+                </div>
+            </div>
+        `).join('');
+    };
+
     // Global navigation for dashboard breadcrumb
     window.addEventListener('hashchange', () => {
-        if (window.location.hash !== '#dashboard') {
+        if (!window.location.hash.includes('dashboard')) {
             document.querySelector('main').style.display = 'block';
             document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('barberDashboardSection').style.display = 'none';
         }
     });
 
@@ -251,17 +342,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (error) throw error;
                     alert('Selamat datang!');
                 } else {
+                    const role = document.querySelector('input[name="role"]:checked')?.value || 'customer';
                     const { data, error } = await _supabase.auth.signUp({
                         email,
                         password,
                         options: {
                             data: {
-                                full_name: email.split('@')[0] // Sementara guna email prefix sebagai nama
+                                full_name: email.split('@')[0],
+                                role: role
                             }
                         }
                     });
                     if (error) throw error;
-                    alert('Sila semak e-mel anda untuk pengesahan!');
+                    alert('Sifa semak e-mel anda untuk pengesahan!');
                 }
                 authModal.style.display = 'none';
             } catch (error) {
