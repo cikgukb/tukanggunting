@@ -254,6 +254,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const { data, error } = await _supabase.auth.signUp({
                         email,
                         password,
+                        options: {
+                            data: {
+                                full_name: email.split('@')[0] // Sementara guna email prefix sebagai nama
+                            }
+                        }
                     });
                     if (error) throw error;
                     alert('Sila semak e-mel anda untuk pengesahan!');
@@ -379,9 +384,19 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmBookingBtn.innerText = 'Menempah...';
 
             try {
+                // Untuk demo, kita perlukan ID Barber dan Service yang sah dari DB
+                // Anda perlu pastikan id ini wujud dalam table anda
+                const { data: barberData } = await _supabase.from('barbers').select('id').limit(1).single();
+                const { data: serviceData } = await _supabase.from('services').select('id').limit(1).single();
+
+                if (!barberData || !serviceData) {
+                    throw new Error('Sila hubungi Admin. Data Barber atau Perkhidmatan tidak ditemui dalam database.');
+                }
+
                 const { error } = await _supabase.from('bookings').insert({
                     customer_id: user.id,
-                    service_id: 1, // Placeholder
+                    barber_id: barberData.id,
+                    service_id: serviceData.id,
                     scheduled_at: new Date(selectedDate).toISOString().split('T')[0] + ' ' + selectedTime,
                     status: 'pending'
                 });
