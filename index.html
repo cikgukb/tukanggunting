@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ms">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tukang Gunting - Klik, Gunting & Segar</title>
+    <meta name="description"
+        content="Tempah tukang gunting rambut profesional anda bila-bila masa, di mana sahaja dengan Tukang Gunting.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="container navbar">
+            <div class="logo">
+                <i data-lucide="scissors" class="logo-icon"></i>
+                <span class="logo-text">TUKANG <span class="highlight">GUNTING</span></span>
+            </div>
+            <nav class="nav-links">
+                <a href="#services">Perkhidmatan</a>
+                <a href="#barbers">Barber</a>
+                <a href="#about">Tentang</a>
+                <button class="btn btn-primary" id="loginBtn">Log Masuk</button>
+            </nav>
+            <button class="mobile-menu-btn">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container hero-content">
+                <h1 class="hero-title">Tampilan <span class="highlight">Premium</span> Untuk Anda yang Hebat</h1>
+                <p class="hero-subtitle">Cari barber terbaik di kawasan anda dan tempah janji temu dengan hanya beberapa
+                    klik.</p>
+                <div class="hero-cta">
+                    <button class="btn btn-primary btn-lg">Tempah Sekarang</button>
+                    <button class="btn btn-outline btn-lg">Lihat Barber</button>
+                </div>
+            </div>
+            <div class="hero-overlay"></div>
+        </section>
+
+        <section id="features" class="features container">
+            <div class="section-header">
+                <h2>Kenapa Pilih Kami?</h2>
+                <div class="underline"></div>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i data-lucide="calendar-check"></i>
+                    <h3>Tempahan Mudah</h3>
+                    <p>Pilih masa yang sesuai dan tempah dalam masa seminit sahaja.</p>
+                </div>
+                <div class="feature-card">
+                    <i data-lucide="star"></i>
+                    <h3>Barber Berpengalaman</h3>
+                    <p>Semua barber kami adalah profesional yang terlatih dan mahir.</p>
+                </div>
+                <div class="feature-card">
+                    <i data-lucide="map-pin"></i>
+                    <h3>Lokasi Berdekatan</h3>
+                    <p>Cari kedai gunting atau barber yang sedia ke rumah anda.</p>
+                </div>
+            </div>
+        </section>
+        <section id="barbers" class="barbers container">
+            <div class="section-header">
+                <h2>Barber <span class="highlight">Pilihan</span></h2>
+                <div class="underline"></div>
+                <p class="section-subtitle">Pilih gaya anda dengan barber terbaik kami.</p>
+            </div>
+            <div class="barbers-grid" id="barbersList">
+                <div class="loading-shimmer"
+                    style="height: 400px; grid-column: 1/-1; background: var(--bg-card); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
+                    <p>Memuatkan barber terbaik...</p>
+                </div>
+            </div>
+            <div class="view-all">
+                <button class="btn btn-outline">Lihat Semua Barber</button>
+            </div>
+        </section>
+
+        <section id="services" class="services container">
+            <div class="section-header">
+                <h2>Perkhidmatan Kami</h2>
+                <div class="underline"></div>
+            </div>
+            <div class="services-list">
+                <div class="service-item">
+                    <div class="service-info">
+                        <h3>Gunting Rambut Tradisional</h3>
+                        <p>Termasuk cucian dan gaya.</p>
+                    </div>
+                    <div class="service-price">RM 25.00</div>
+                    <button class="btn btn-primary btn-sm">Tempah</button>
+                </div>
+                <div class="service-item">
+                    <div class="service-info">
+                        <h3>Cukur Misai & Janggut</h3>
+                        <p>Kemasan rapi dengan tuala panas.</p>
+                    </div>
+                    <div class="service-price">RM 15.00</div>
+                    <button class="btn btn-primary btn-sm">Tempah</button>
+                </div>
+                <div class="service-item">
+                    <div class="service-info">
+                        <h3>Pakej Premium (Gunting + Cukur + Facial)</h3>
+                        <p>Rawatan lengkap untuk penampilan segar.</p>
+                    </div>
+                    <div class="service-price">RM 55.00</div>
+                    <button class="btn btn-primary btn-sm">Tempah</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-content">
+            <div class="footer-info">
+                <h3>TUKANG <span class="highlight">GUNTING</span></h3>
+                <p>Membawa gaya premium ke pintu rumah anda.</p>
+            </div>
+            <div class="footer-bottom">
+                &copy; 2025 Tukang Gunting. Semua hak terpelihara.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="authFormTitle">
+                <h2>Log Masuk</h2>
+                <p>Selamat kembali ke Tukang Gunting</p>
+            </div>
+            <form id="authForm" class="auth-form">
+                <div class="form-group">
+                    <label for="email">E-mel</label>
+                    <input type="email" id="email" placeholder="nama@emel.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Kata Laluan</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" id="authSubmitBtn">Log Masuk</button>
+            </form>
+            <div class="auth-switch">
+                <p id="authSwitchText">Belum ada akaun? <a href="#" id="toggleAuth">Daftar Sekarang</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content booking-modal-content">
+            <span class="close-modal" id="closeBookingModal">&times;</span>
+            <div class="booking-header">
+                <h2 id="modalServiceName">Tempah Perkhidmatan</h2>
+                <p id="modalBarberName">Sila pilih tarikh dan masa</p>
+            </div>
+            <div class="booking-body">
+                <div class="date-picker">
+                    <label>Pilih Tarikh</label>
+                    <div class="date-scroll" id="dateScroll">
+                        <!-- Dates will be injected here -->
+                    </div>
+                </div>
+                <div class="time-picker">
+                    <label>Pilih Masa</label>
+                    <div class="time-grid" id="timeGrid">
+                        <!-- Time slots will be injected here -->
+                    </div>
+                </div>
+            </div>
+            <div class="booking-footer">
+                <div class="booking-total">
+                    <span>Jumlah:</span>
+                    <span id="modalTotalPrice" class="highlight">RM 0.00</span>
+                </div>
+                <button class="btn btn-primary btn-block" id="confirmBookingBtn">Sahkan Tempahan</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Initialize icons
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

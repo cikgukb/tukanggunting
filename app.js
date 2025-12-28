@@ -1,0 +1,304 @@
+// Basic UI Logic & Supabase Integration Stub
+// Supabase Configuration
+const SUPABASE_URL = 'https://ltsmuisdrqydfydptlrv.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_a56rum3phSKbor1PPF8Psw_GQmkTsMk';
+
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Tukang Gunting script loaded.');
+
+    // Mock Barber Data
+    const mockBarbers = [
+        {
+            name: "Ahmad Jamsari",
+            location: "Kuala Lumpur",
+            rating: 4.9,
+            image: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+        },
+        {
+            name: "Syed Al-Bakri",
+            location: "Shah Alam",
+            rating: 4.8,
+            image: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+        },
+        {
+            name: "Fadhil Razak",
+            location: "Petaling Jaya",
+            rating: 5.0,
+            image: "https://images.unsplash.com/photo-1621605815841-aa897822920c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80"
+        }
+    ];
+
+    const renderBarbers = () => {
+        const barbersList = document.getElementById('barbersList');
+        if (!barbersList) return;
+
+        barbersList.innerHTML = mockBarbers.map(barber => `
+            <div class="barber-card">
+                <img src="${barber.image}" alt="${barber.name}" class="barber-image">
+                <div class="barber-info">
+                    <h3 class="barber-name">${barber.name}</h3>
+                    <div class="barber-location">
+                        <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
+                        ${barber.location}
+                    </div>
+                    <div class="barber-rating">
+                        <i data-lucide="star" style="width: 16px; height: 16px; fill: var(--primary);"></i>
+                        ${barber.rating}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        lucide.createIcons();
+    };
+
+    // Simulate loading
+    setTimeout(renderBarbers, 1500);
+
+    // Smooth scroll for nav links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Auth Modal Logic
+    const authModal = document.getElementById('authModal');
+    const loginBtn = document.getElementById('loginBtn');
+    const closeModal = document.querySelector('.close-modal');
+    const toggleAuth = document.getElementById('toggleAuth');
+    const authForm = document.getElementById('authForm');
+    const authSubmitBtn = document.getElementById('authSubmitBtn');
+    const authTitle = document.querySelector('#authFormTitle h2');
+    const authSubtitle = document.querySelector('#authFormTitle p');
+    const authSwitchText = document.getElementById('authSwitchText');
+
+    let isLogin = true;
+
+    const toggleAuthMode = () => {
+        isLogin = !isLogin;
+        authTitle.innerText = isLogin ? 'Log Masuk' : 'Daftar Akaun';
+        authSubtitle.innerText = isLogin ? 'Selamat kembali ke Tukang Gunting' : 'Sertai komuniti Tukang Gunting hari ini';
+        authSubmitBtn.innerText = isLogin ? 'Log Masuk' : 'Daftar';
+        authSwitchText.innerHTML = isLogin ?
+            'Belum ada akaun? <a href="#" id="toggleAuth">Daftar Sekarang</a>' :
+            'Sudah ada akaun? <a href="#" id="toggleAuth">Log Masuk</a>';
+
+        // Re-attach listener because innerHTML wipes it
+        document.getElementById('toggleAuth').addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleAuthMode();
+        });
+    };
+
+    if (loginBtn) {
+        loginBtn.addEventListener('click', () => {
+            authModal.style.display = 'flex';
+        });
+    }
+
+    if (closeModal) {
+        closeModal.addEventListener('click', () => {
+            authModal.style.display = 'none';
+        });
+    }
+
+    window.addEventListener('click', (e) => {
+        if (e.target === authModal) {
+            authModal.style.display = 'none';
+        }
+    });
+
+    if (toggleAuth) {
+        toggleAuth.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleAuthMode();
+        });
+    }
+
+    // Supabase Auth Handling
+    if (authForm) {
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            authSubmitBtn.disabled = true;
+            authSubmitBtn.innerText = 'Sila tunggu...';
+
+            try {
+                if (isLogin) {
+                    const { data, error } = await _supabase.auth.signInWithPassword({
+                        email,
+                        password,
+                    });
+                    if (error) throw error;
+                    alert('Selamat datang!');
+                } else {
+                    const { data, error } = await _supabase.auth.signUp({
+                        email,
+                        password,
+                    });
+                    if (error) throw error;
+                    alert('Sila semak e-mel anda untuk pengesahan!');
+                }
+                authModal.style.display = 'none';
+            } catch (error) {
+                alert('Ralat: ' + error.message);
+            } finally {
+                authSubmitBtn.disabled = false;
+                authSubmitBtn.innerText = isLogin ? 'Log Masuk' : 'Daftar';
+            }
+        });
+    }
+
+    // Booking Logic
+    const bookingModal = document.getElementById('bookingModal');
+    const closeBookingModal = document.getElementById('closeBookingModal');
+    const dateScroll = document.getElementById('dateScroll');
+    const timeGrid = document.getElementById('timeGrid');
+    const confirmBookingBtn = document.getElementById('confirmBookingBtn');
+
+    let selectedDate = null;
+    let selectedTime = null;
+    let currentService = null;
+
+    const generateDates = () => {
+        const dates = [];
+        const days = ['Aha', 'Isn', 'Sel', 'Rab', 'Kha', 'Jum', 'Sab'];
+        const today = new Date();
+
+        for (let i = 0; i < 14; i++) {
+            const date = new Date();
+            date.setDate(today.getDate() + i);
+            dates.push({
+                full: date,
+                dayName: days[date.getDay()],
+                dayNum: date.getDate()
+            });
+        }
+
+        dateScroll.innerHTML = dates.map((d, i) => `
+            <div class="date-item ${i === 0 ? 'active' : ''}" data-date="${d.full.toISOString()}">
+                <span>${d.dayName}</span>
+                <span>${d.dayNum}</span>
+            </div>
+        `).join('');
+
+        selectedDate = dates[0].full.toISOString();
+
+        // Add listeners
+        document.querySelectorAll('.date-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.date-item').forEach(d => d.classList.remove('active'));
+                item.classList.add('active');
+                selectedDate = item.dataset.date;
+                renderTimeSlots();
+            });
+        });
+    };
+
+    const renderTimeSlots = () => {
+        const slots = [
+            '10:00 AM', '11:00 AM', '12:00 PM', '02:00 PM',
+            '03:00 PM', '04:00 PM', '05:00 PM', '08:00 PM', '09:00 PM'
+        ];
+
+        timeGrid.innerHTML = slots.map(slot => `
+            <div class="time-slot" data-time="${slot}">${slot}</div>
+        `).join('');
+
+        // Add listeners
+        document.querySelectorAll('.time-slot').forEach(slot => {
+            slot.addEventListener('click', () => {
+                document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('active'));
+                slot.classList.add('active');
+                selectedTime = slot.dataset.time;
+            });
+        });
+    };
+
+    const openBooking = (serviceName, price) => {
+        currentService = { name: serviceName, price: price };
+        document.getElementById('modalServiceName').innerText = serviceName;
+        document.getElementById('modalTotalPrice').innerText = price;
+        generateDates();
+        renderTimeSlots();
+        bookingModal.style.display = 'flex';
+    };
+
+    if (closeBookingModal) {
+        closeBookingModal.addEventListener('click', () => {
+            bookingModal.style.display = 'none';
+        });
+    }
+
+    // Attach to "Tempah" buttons
+    document.querySelectorAll('.btn-sm').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const serviceItem = btn.closest('.service-item');
+            const name = serviceItem.querySelector('h3').innerText;
+            const price = serviceItem.querySelector('.service-price').innerText;
+            openBooking(name, price);
+        });
+    });
+
+    if (confirmBookingBtn) {
+        confirmBookingBtn.addEventListener('click', async () => {
+            if (!selectedTime) {
+                alert('Sila pilih masa!');
+                return;
+            }
+
+            // Check if user is logged in
+            const { data: { user } } = await _supabase.auth.getUser();
+
+            if (!user) {
+                alert('Sila log masuk untuk membuat tempahan.');
+                authModal.style.display = 'flex';
+                return;
+            }
+
+            confirmBookingBtn.disabled = true;
+            confirmBookingBtn.innerText = 'Menempah...';
+
+            try {
+                const { error } = await _supabase.from('bookings').insert({
+                    customer_id: user.id,
+                    service_id: 1, // Placeholder
+                    scheduled_at: new Date(selectedDate).toISOString().split('T')[0] + ' ' + selectedTime,
+                    status: 'pending'
+                });
+
+                if (error) throw error;
+                alert('Tempahan berjaya!');
+                bookingModal.style.display = 'none';
+            } catch (error) {
+                alert('Ralat semasa tempahan: ' + error.message);
+            } finally {
+                confirmBookingBtn.disabled = false;
+                confirmBookingBtn.innerText = 'Sahkan Tempahan';
+            }
+        });
+    }
+
+    // Scroll effect for header
+    window.addEventListener('scroll', () => {
+        const header = document.querySelector('.header');
+        if (window.scrollY > 50) {
+            header.style.backgroundColor = 'rgba(0, 0, 0, 0.95)';
+            header.style.padding = '0.75rem 0';
+        } else {
+            header.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+            header.style.padding = '1rem 0';
+        }
+    });
+});
