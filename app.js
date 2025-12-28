@@ -5,6 +5,9 @@ const SUPABASE_ANON_KEY = 'sb_publishable_a56rum3phSKbor1PPF8Psw_GQmkTsMk';
 
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Login state global
+let currentUser = null;
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Tukang Gunting script loaded.');
 
@@ -128,6 +131,106 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleAuthMode();
         });
     }
+
+    // Auth State Observer
+    _supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN') {
+            currentUser = session.user;
+            updateUIForLoggedInUser();
+            fetchBarbers(); // Refresh view
+        } else if (event === 'SIGNED_OUT') {
+            currentUser = null;
+            updateUIForLoggedOutUser();
+        }
+    });
+
+    const updateUIForLoggedInUser = async () => {
+        const loginBtn = document.getElementById('loginBtn');
+        if (loginBtn) {
+            loginBtn.innerText = 'Dashboard';
+            loginBtn.onclick = () => {
+                window.location.hash = '#dashboard';
+                showDashboard();
+            };
+        }
+
+        // Add logout link to nav if not exists
+        if (!document.getElementById('logoutBtn')) {
+            const nav = document.querySelector('.nav-links');
+            const logoutBtn = document.createElement('a');
+            logoutBtn.id = 'logoutBtn';
+            logoutBtn.href = '#';
+            logoutBtn.innerText = 'Log Keluar';
+            logoutBtn.style.color = '#ff4444';
+            logoutBtn.onclick = async (e) => {
+                e.preventDefault();
+                await _supabase.auth.signOut();
+                location.reload();
+            };
+            nav.insertBefore(logoutBtn, loginBtn);
+        }
+    };
+
+    const updateUIForLoggedOutUser = () => {
+        const loginBtn = document.getElementById('loginBtn');
+        if (loginBtn) {
+            loginBtn.innerText = 'Log Masuk';
+            loginBtn.onclick = () => authModal.style.display = 'flex';
+        }
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) logoutBtn.remove();
+    };
+
+    const showDashboard = async () => {
+        // Toggle dashboard view
+        document.querySelector('main').style.display = 'none';
+        document.getElementById('dashboardSection').style.display = 'block';
+
+        const bookingList = document.getElementById('userBookingsList');
+        bookingList.innerHTML = '<p>Memuatkan tempahan anda...</p>';
+
+        const { data, error } = await _supabase
+            .from('bookings')
+            .select(`
+                id,
+                scheduled_at,
+                status,
+                services (name, price),
+                barbers (profiles (full_name))
+            `)
+            .eq('customer_id', currentUser.id);
+
+        if (error) {
+            bookingList.innerHTML = '<p>Ralat memuatkan tempahan.</p>';
+            return;
+        }
+
+        if (data.length === 0) {
+            bookingList.innerHTML = '<p>Anda belum mempunyai sebarang tempahan.</p>';
+            return;
+        }
+
+        bookingList.innerHTML = data.map(booking => `
+            <div class="booking-card">
+                <div class="booking-details">
+                    <h4>${booking.services.name}</h4>
+                    <p>Barber: ${booking.barbers.profiles.full_name}</p>
+                    <p>Tarikh/Masa: ${new Date(booking.scheduled_at).toLocaleString()}</p>
+                </div>
+                <div class="booking-status ${booking.status}">
+                    ${booking.status.toUpperCase()}
+                </div>
+            </div>
+        `).join('');
+    };
+
+    // Global navigation for dashboard breadcrumb
+    window.addEventListener('hashchange', () => {
+        if (window.location.hash !== '#dashboard') {
+            document.querySelector('main').style.display = 'block';
+            document.getElementById('dashboardSection').style.display = 'none';
+        }
+    });
 
     // Supabase Auth Handling
     if (authForm) {
